@@ -11,9 +11,11 @@ import processing
 from processing.modeler.ModelerDialog import ModelerDialog
 from qgis.PyQt.QtCore import QCoreApplication, QVariant
 
+from ...widgets.field_widget import CustomFieldWrapper
+
 from qgis.core import (QgsProcessing,
                        QgsFeatureSink,
-                       QgsProcessingAlgorithm, QgsSpatialIndex, QgsPointXY,
+                       QgsProcessingAlgorithm, QgsSpatialIndex, QgsPointXY, QgsProcessingParameterField,
                        QgsProcessingParameterFeatureSource, QgsFeatureSource, QgsProcessingParameterFolderDestination,
                        QgsProcessingParameterFeatureSink, QgsProcessingContext, QgsProcessingFeedback,
                        QgsProcessingParameterDistance, QgsProcessingParameterCrs, QgsProcessingParameterNumber,
@@ -32,6 +34,9 @@ options = parseOptions(__file__)
 class Process(QgsProcessingAlgorithm):
     CANALS = 'CANALS'
     DELIVERYPOINTS = 'DELIVERYPOINTS'
+
+    CANALSFIELD = 'CANALSFIELD'
+    POINTSFIELD = 'POINTSFIELD'
 
     TOLERANCECANALS = 'TOLERANCECANALS'
     TOLERANCEPOINTS = 'TOLERANCEPOINTS'
@@ -67,6 +72,36 @@ class Process(QgsProcessingAlgorithm):
                 defaultValue=None
             )
         )
+
+        self.addParameter(
+            QgsProcessingParameterField(
+                name=self.CANALSFIELD,
+                description='Field with liine name in canals layer',
+                type=QgsProcessingParameterField.Any,
+                parentLayerParameterName=self.CANALS,
+                allowMultiple=False,
+                defaultValue=options.get(self.CANALSFIELD, None)
+            )
+        )
+
+        self.parameterDefinition(self.CANALSFIELD).setMetadata({
+            'widget_wrapper': CustomFieldWrapper
+        })
+
+        self.addParameter(
+            QgsProcessingParameterField(
+                name=self.POINTSFIELD,
+                description='Field with liine name in delivery points layer',
+                type=QgsProcessingParameterField.Any,
+                parentLayerParameterName=self.DELIVERYPOINTS,
+                allowMultiple=False,
+                defaultValue=options.get(self.POINTSFIELD, None)
+            )
+        )
+
+        self.parameterDefinition(self.POINTSFIELD).setMetadata({
+            'widget_wrapper': CustomFieldWrapper
+        })
 
         self.addParameter(
             QgsProcessingParameterDistance(
@@ -134,11 +169,14 @@ class Process(QgsProcessingAlgorithm):
 
         # canals: QgsFeatureSource = self.parameterAsSource(parameters, self.CANALS, context)
 
+        canalsfield: str = self.parameterAsFields(parameters, self.CANALSFIELD, context)[0]
+        pointsfield: str = self.parameterAsFields(parameters, self.POINTSFIELD, context)[0]
+
         tolerancepoints: float = self.parameterAsDouble(parameters, self.TOLERANCEPOINTS, context)
         tolerancecanals: float = self.parameterAsDouble(parameters, self.TOLERANCECANALS, context)
 
-        line_field_name = "name"
-        point_line_field_name = "line"
+        # canalsfield = "name"
+        # pointsfield = "line"
 
         model_feedback = QgsProcessingMultiStepFeedback(3, feedback)
 
@@ -200,12 +238,12 @@ class Process(QgsProcessingAlgorithm):
 
         snapped_points_layers = []
 
-        for line_name in points_with_uuid.uniqueValues(points_with_uuid.fields().indexFromName(point_line_field_name)):
-            line_expression = QgsExpression().createFieldEqualityExpression(line_field_name, line_name)
+        for line_name in points_with_uuid.uniqueValues(points_with_uuid.fields().indexFromName(pointsfield)):
+            line_expression = QgsExpression().createFieldEqualityExpression(canalsfield, line_name)
             line_request = QgsFeatureRequest()
             line_request.setFilterExpression(line_expression)
 
-            point_expression = QgsExpression().createFieldEqualityExpression(point_line_field_name, line_name)
+            point_expression = QgsExpression().createFieldEqualityExpression(pointsfield, line_name)
             point_request = QgsFeatureRequest()
             point_request.setFilterExpression(point_expression)
 
