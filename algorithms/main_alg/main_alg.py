@@ -5,28 +5,20 @@ __copyright__ = '(C) 2021 by gwolf'
 __revision__ = '$Format:%H$'
 
 import os
-from typing import Dict, Any, Union, List
+from typing import Dict, Any, Union
 
 import processing
 from processing.modeler.ModelerDialog import ModelerDialog
-from qgis.PyQt.QtCore import QCoreApplication, QVariant
-
-from ...widgets.field_widget import CustomFieldWrapper
 
 from qgis.core import (QgsProcessing,
-                       QgsFeatureSink,
-                       QgsProcessingAlgorithm, QgsSpatialIndex, QgsPointXY, QgsProcessingParameterField,
-                       QgsProcessingParameterFeatureSource, QgsFeatureSource, QgsProcessingParameterFolderDestination,
-                       QgsProcessingParameterFeatureSink, QgsProcessingContext, QgsProcessingFeedback,
-                       QgsProcessingParameterDistance, QgsProcessingParameterCrs, QgsProcessingParameterNumber,
-                       QgsProcessingMultiStepFeedback, QgsCoordinateReferenceSystem, QgsProcessingUtils, QgsExpression,
-                       QgsFeatureRequest, QgsFeature, QgsVectorLayer, QgsWkbTypes, QgsVectorDataProvider, QgsField,
-                       QgsGeometry, QgsRasterLayer, QgsRasterDataProvider, QgsFields, QgsProcessingParameterRasterLayer,
-                       QgsProcessingFeatureSourceDefinition, QgsProject, QgsMapLayerStore, QgsDistanceArea,
-                       QgsLineString, QgsPoint, QgsProcessingParameterVectorLayer,
-                       QgsProcessingParameterVectorDestination, QgsProcessingParameterBoolean)
+                       QgsProcessingAlgorithm, QgsProcessingParameterField,
+                       QgsProcessingParameterFeatureSource, QgsProcessingParameterFeatureSink, QgsProcessingContext,
+                       QgsProcessingFeedback,
+                       QgsProcessingParameterDistance, QgsProcessingMultiStepFeedback, QgsExpression,
+                       QgsFeatureRequest, QgsVectorLayer)
 
 from ...modules.optionParser import parseOptions
+from ...widgets.field_widget import CustomFieldWrapper
 
 options = parseOptions(__file__)
 
@@ -167,16 +159,11 @@ class Process(QgsProcessingAlgorithm):
                          feedback: QgsProcessingFeedback) -> Union[dict, Dict[str, Any]]:
         result = dict()
 
-        # canals: QgsFeatureSource = self.parameterAsSource(parameters, self.CANALS, context)
-
         canalsfield: str = self.parameterAsFields(parameters, self.CANALSFIELD, context)[0]
         pointsfield: str = self.parameterAsFields(parameters, self.POINTSFIELD, context)[0]
 
         tolerancepoints: float = self.parameterAsDouble(parameters, self.TOLERANCEPOINTS, context)
         tolerancecanals: float = self.parameterAsDouble(parameters, self.TOLERANCECANALS, context)
-
-        # canalsfield = "name"
-        # pointsfield = "line"
 
         model_feedback = QgsProcessingMultiStepFeedback(3, feedback)
 
@@ -291,7 +278,6 @@ class Process(QgsProcessingAlgorithm):
                                                                         snapped_points.sourceCrs())
 
         snapped_points_sink.addFeatures(snapped_points.getFeatures())
-
 
         print("Vectors merged")
 
