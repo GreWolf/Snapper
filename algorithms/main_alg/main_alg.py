@@ -164,7 +164,7 @@ class Process(QgsProcessingAlgorithm):
                                      is_child_algorithm=True)
         # TODO SNAPPEDCANALS добавить в result в конце, когда они будут порезаны по пересечениям
 
-        print("Главная обработка сделана")
+        print("Main processing complete")
 
         model_feedback.setCurrentStep(1)
 
@@ -226,7 +226,7 @@ class Process(QgsProcessingAlgorithm):
                                is_child_algorithm=True)['OUTPUT']
             )
 
-        print("Цикл пройден")
+        print("Cycle complete")
 
         model_feedback.setCurrentStep(2)
 
@@ -255,7 +255,7 @@ class Process(QgsProcessingAlgorithm):
         snapped_points_sink.addFeatures(snapped_points.getFeatures())
 
 
-        print("Вектора объеденены")
+        print("Vectors merged")
 
         model_feedback.setCurrentStep(3)
 
