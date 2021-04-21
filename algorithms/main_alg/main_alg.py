@@ -13,7 +13,7 @@ from processing.modeler.ModelerDialog import ModelerDialog
 from qgis.core import (QgsProcessing,
                        QgsProcessingAlgorithm, QgsProcessingParameterField,
                        QgsProcessingParameterFeatureSource, QgsProcessingParameterFeatureSink, QgsProcessingContext,
-                       QgsProcessingFeedback,
+                       QgsProcessingFeedback, QgsProcessingParameterString,
                        QgsProcessingParameterDistance, QgsProcessingMultiStepFeedback, QgsExpression,
                        QgsFeatureRequest, QgsVectorLayer)
 
@@ -30,6 +30,9 @@ class Process(QgsProcessingAlgorithm):
     CANALSFIELD = 'CANALSFIELD'
     POINTSFIELD = 'POINTSFIELD'
 
+    TYPEFIELD = 'TYPEFIELD'
+    TYPEVALUE = 'TYPEVALUE'
+
     TOLERANCECANALS = 'TOLERANCECANALS'
     TOLERANCEPOINTS = 'TOLERANCEPOINTS'
 
@@ -40,7 +43,6 @@ class Process(QgsProcessingAlgorithm):
     def __init__(self, plugin_dir: str) -> None:
         self.__plugin_dir = plugin_dir
 
-        # Загружаем готовую модель из файла
         self.snap_lines = ModelerDialog()
         self.snap_lines.loadModel(os.path.join(self.__plugin_dir, r"qgis_models", "snap_lines.model3"))
 
@@ -94,6 +96,30 @@ class Process(QgsProcessingAlgorithm):
         self.parameterDefinition(self.POINTSFIELD).setMetadata({
             'widget_wrapper': CustomFieldWrapper
         })
+
+        self.addParameter(
+            QgsProcessingParameterField(
+                name=self.TYPEFIELD,
+                description='Field with delivery points type',
+                type=QgsProcessingParameterField.String,
+                parentLayerParameterName=self.DELIVERYPOINTS,
+                allowMultiple=False,
+                defaultValue=options.get(self.TYPEFIELD, None)
+            )
+        )
+
+        self.parameterDefinition(self.TYPEFIELD).setMetadata({
+            'widget_wrapper': CustomFieldWrapper
+        })
+
+        self.addParameter(
+            QgsProcessingParameterString(
+                name=self.TYPEVALUE,
+                description='Type value for iintersection points',
+                multiLine=False,
+                defaultValue=options.get(self.TYPEVALUE, None)
+            )
+        )
 
         self.addParameter(
             QgsProcessingParameterDistance(
@@ -162,6 +188,9 @@ class Process(QgsProcessingAlgorithm):
         canalsfield: str = self.parameterAsFields(parameters, self.CANALSFIELD, context)[0]
         pointsfield: str = self.parameterAsFields(parameters, self.POINTSFIELD, context)[0]
 
+        typefield: str = self.parameterAsFields(parameters, self.TYPEFIELD, context)[0]
+        typevalue: str = self.parameterAsString(parameters, self.TYPEVALUE, context)
+
         tolerancepoints: float = self.parameterAsDouble(parameters, self.TOLERANCEPOINTS, context)
         tolerancecanals: float = self.parameterAsDouble(parameters, self.TOLERANCECANALS, context)
 
@@ -170,7 +199,7 @@ class Process(QgsProcessingAlgorithm):
         if feedback.isCanceled():
             return result
 
-        snappedcanals_out_name = 'native:snapgeometries_1:{}'.format(self.SNAPPEDCANALS)
+        snappedcanals_out_name = 'native:splitwithlines_1:{}'.format(self.SNAPPEDCANALS)
         intersect_out_name = 'native:fieldcalculator_1:INTERSECTIONS'
         points_with_uuid_name = 'qgis:advancedpythonfieldcalculator_1:{}'.format(self.POINTSWITHUUID)
 
@@ -179,6 +208,8 @@ class Process(QgsProcessingAlgorithm):
                                          'CANALS': parameters[self.CANALS],
                                          'DELIVERYPOINTS': parameters[self.DELIVERYPOINTS],
                                          'TOLERANCECANALS': tolerancecanals,
+                                         'TYPEFIELD': typefield,
+                                         'TYPEVALUE': typevalue,
                                          'VERBOSE_LOG': True,
                                          snappedcanals_out_name: 'TEMPORARY_OUTPUT',
                                          intersect_out_name: 'TEMPORARY_OUTPUT',
