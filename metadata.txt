@@ -3,9 +3,9 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=projecta
+name=Snapper
 qgisMinimumVersion=3.0
-# description=GWolf tools
+description=Tool for snapping points and lines
 version=0.1.0
 author=gwolf
 # email=grey_wolf.88@mail.ru

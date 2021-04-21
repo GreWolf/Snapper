@@ -3,18 +3,17 @@ from typing import Union
 from processing.gui.wrappers import (
     TableFieldWidgetWrapper
 )
-from qgis.core import (QgsExpression,
-                       )
+
 from qgis.gui import (
     QgsProcessingGui,
 )
 
 from ..modules.proximity import find_field
-# from modules.proximity import find_field
 
 DIALOG_STANDARD = QgsProcessingGui.Standard
 DIALOG_BATCH = QgsProcessingGui.Batch
 DIALOG_MODELER = QgsProcessingGui.Modeler
+
 
 class CustomFieldWrapper(TableFieldWidgetWrapper):
 

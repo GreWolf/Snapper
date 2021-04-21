@@ -152,17 +152,6 @@ class Process(QgsProcessingAlgorithm):
 
         self.addParameter(
             QgsProcessingParameterFeatureSink(
-                name=self.SNAPPEDPOINTS,
-                description='Snapped delivery points with intersections',
-                type=QgsProcessing.TypeVectorAnyGeometry,
-                createByDefault=True,
-                supportsAppend=True,
-                defaultValue=None
-            )
-        )
-
-        self.addParameter(
-            QgsProcessingParameterFeatureSink(
                 name=self.SNAPPEDCANALS,
                 description='Snaped canals',
                 type=QgsProcessing.TypeVectorAnyGeometry,
@@ -171,14 +160,16 @@ class Process(QgsProcessingAlgorithm):
             )
         )
 
-        # self.addParameter(
-        #     QgsProcessingParameterBoolean(
-        #         name='VERBOSE_LOG',
-        #         description='Verbose logging',
-        #         optional=True,
-        #         defaultValue=False
-        #     )
-        # )
+        self.addParameter(
+            QgsProcessingParameterFeatureSink(
+                name=self.SNAPPEDPOINTS,
+                description='Snapped delivery points with intersections',
+                type=QgsProcessing.TypeVectorAnyGeometry,
+                createByDefault=True,
+                supportsAppend=True,
+                defaultValue=None
+            )
+        )
 
     def processAlgorithm(self, parameters: Dict[str, Any],
                          context: QgsProcessingContext,
@@ -317,32 +308,6 @@ class Process(QgsProcessingAlgorithm):
         if feedback.isCanceled():
             return result
 
-        # for point_feat in intersections.getFeatures():
-        #
-        #         expression1 = QgsExpression().createFieldEqualityExpression("name", point_feat["name"])
-        #         expression2 = QgsExpression().createFieldEqualityExpression("name", point_feat["name_2"])
-        #         expression = expression1 + " OR " + expression2
-        #         request = QgsFeatureRequest()
-        #         request.setFilterExpression(expression)
-        #
-        #         for line_feat in snapped_canals.getFeatures(request):
-        #             line_feat: QgsFeature
-        #
-        #             line_geom = line_feat.geometry()
-        #             line_geom: QgsGeometry
-        #
-        #             for line_geom_part in line_geom.asGeometryCollection():
-        #                 line_geom_part: QgsGeometry
-        #
-        #                 line_points: List[QgsPointXY] = line_geom_part.asPolyline()
-
-        # (points_with_uuid_sink, points_with_uuid_id) = self.parameterAsSink(parameters, self.SNAPPEDPOINTS,
-        #                                                                     context, points_with_uuid.fields(),
-        #                                                                     points_with_uuid.wkbType(),
-        #                                                                     points_with_uuid.sourceCrs())
-        #
-        # snapped_canals_sink.addFeatures(snapped_canals.getFeatures())
-
         result.update({
             self.SNAPPEDPOINTS: snapped_points_id,
         })
@@ -383,9 +348,6 @@ class Process(QgsProcessingAlgorithm):
         formatting characters.
         """
         return 'process_data'
-
-    # def tr(self, string):
-    #     return QCoreApplication.translate('Processing', string)
 
     def createInstance(self) -> QgsProcessingAlgorithm:
         return Process(self.__plugin_dir)
