@@ -52,7 +52,7 @@ class Process(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFeatureSource(
                 name=self.CANALS,
-                description='Canals',
+                description='Input A (LINES)',
                 types=[QgsProcessing.TypeVectorLine],
                 defaultValue=None
             )
@@ -61,7 +61,7 @@ class Process(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFeatureSource(
                 name=self.DELIVERYPOINTS,
-                description='Delivery points',
+                description='Input B (POINTS)',
                 types=[QgsProcessing.TypeVectorPoint],
                 defaultValue=None
             )
@@ -70,7 +70,7 @@ class Process(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterField(
                 name=self.CANALSFIELD,
-                description='Field with liine name in canals layer',
+                description='LINE NAME attribute (INPUT A)',
                 type=QgsProcessingParameterField.Any,
                 parentLayerParameterName=self.CANALS,
                 allowMultiple=False,
@@ -85,7 +85,7 @@ class Process(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterField(
                 name=self.POINTSFIELD,
-                description='Field with liine name in delivery points layer',
+                description='LINE NAME attribute (INPUT B)',
                 type=QgsProcessingParameterField.Any,
                 parentLayerParameterName=self.DELIVERYPOINTS,
                 allowMultiple=False,
@@ -100,7 +100,7 @@ class Process(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterField(
                 name=self.TYPEFIELD,
-                description='Field with delivery points type',
+                description='TYPE attribute for points',
                 type=QgsProcessingParameterField.String,
                 parentLayerParameterName=self.DELIVERYPOINTS,
                 allowMultiple=False,
@@ -115,7 +115,7 @@ class Process(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterString(
                 name=self.TYPEVALUE,
-                description='Type value for iintersection points',
+                description='type VALUE for intersection points',
                 multiLine=False,
                 defaultValue=options.get(self.TYPEVALUE, None)
             )
@@ -124,7 +124,7 @@ class Process(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterDistance(
                 name=self.TOLERANCECANALS,
-                description='Tolerance for canals',
+                description='snapping threshold for lines',
                 parentParameterName=self.CANALS,
                 defaultValue=options.get(self.TOLERANCECANALS, None)
             )
@@ -133,7 +133,7 @@ class Process(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterDistance(
                 name=self.TOLERANCEPOINTS,
-                description='Tolerance for delivery points',
+                description='snapping threshold for points',
                 parentParameterName=self.CANALS,
                 defaultValue=options.get(self.TOLERANCEPOINTS, None),
                 # defaultValue=None
@@ -143,17 +143,7 @@ class Process(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFeatureSink(
                 name=self.POINTSWITHUUID,
-                description='Delivery points with uuid4',
-                type=QgsProcessing.TypeVectorAnyGeometry,
-                createByDefault=True,
-                defaultValue=None
-            )
-        )
-
-        self.addParameter(
-            QgsProcessingParameterFeatureSink(
-                name=self.SNAPPEDCANALS,
-                description='Snaped canals',
+                description='Source points with uuid4 added (OUTPUT A)',
                 type=QgsProcessing.TypeVectorAnyGeometry,
                 createByDefault=True,
                 defaultValue=None
@@ -163,10 +153,20 @@ class Process(QgsProcessingAlgorithm):
         self.addParameter(
             QgsProcessingParameterFeatureSink(
                 name=self.SNAPPEDPOINTS,
-                description='Snapped delivery points with intersections',
+                description='Processed points (OUTPUT B)',
                 type=QgsProcessing.TypeVectorAnyGeometry,
                 createByDefault=True,
                 supportsAppend=True,
+                defaultValue=None
+            )
+        )
+
+        self.addParameter(
+            QgsProcessingParameterFeatureSink(
+                name=self.SNAPPEDCANALS,
+                description='Processed lines (OUTPUT C)',
+                type=QgsProcessing.TypeVectorAnyGeometry,
+                createByDefault=True,
                 defaultValue=None
             )
         )
